@@ -1,50 +1,105 @@
-# Welcome to your Expo app 👋
+# Kanah Health
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive postnatal health companion platform designed specifically for mothers in Kenya. This Next.js application provides essential health services and support during the postnatal journey.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Symptom Checker**: Monitor and track postnatal symptoms
+- **Baby Growth Tracking**: Track your baby's development milestones
+- **Health Tips**: Access valuable health information and guidance
+- **Appointments**: Schedule and manage healthcare appointments
+- **Call Nurse**: Direct access to nursing support
+- **Multi-language Support**: Available in multiple languages
+- **User Authentication**: Secure login and signup system
+- **Personalized Dashboard**: Track your health journey
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- **Framework**: Next.js 15.2.4
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **Authentication**: Supabase Auth
+- **Database**: Supabase
+- **Form Handling**: React Hook Form with Zod validation
+- **State Management**: React Context
+- **Charts**: Recharts
+- **Date Handling**: date-fns
 
-   ```bash
-   npx expo start
-   ```
+## Getting Started
 
-In the output, you'll find options to open the app in a
+### Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Node.js (Latest LTS version recommended)
+- pnpm (Package manager)
+- Supabase account and project
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Installation
 
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clone the repository:
 ```bash
-npm run reset-project
+git clone `https://github.com/ekirira22/kanah-health.git`
+cd kanah-health
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-## Learn more
+3. Set up environment variables:
+Create a `.env.local` file in the root directory with the following variables:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Run the development server:
+```bash
+pnpm dev
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The application will be available at `http://kanah-health.vercel.app`
 
-## Join the community
+## Available Scripts
 
-Join our community of developers creating universal apps.
+- `pnpm dev`: Start the development server
+- `pnpm build`: Build the application for production
+- `pnpm start`: Start the production server
+- `pnpm lint`: Run ESLint for code linting
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Project Structure
+
+```
+kanah-health/
+├── app/                    # Next.js app directory
+│   ├── auth/              # Authentication related pages
+│   ├── dashboard/         # User dashboard
+│   ├── symptom-checker/   # Symptom checking feature
+│   ├── health-tips/       # Health information
+│   ├── appointments/     # Appointment management
+│   ├── baby-growth/       # Baby growth tracking
+│   └── book-appointment/  # Appointment booking feature
+├── components/            # Reusable UI components
+├── lib/                   # Utility functions and configurations
+├── hooks/                 # Custom React hooks
+├── contexts/             # React context providers
+├── styles/               # Global styles
+└── public/               # Static assets
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, please contact info@kanah.health
