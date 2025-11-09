@@ -7,7 +7,12 @@ module.exports = {
   ],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "primary": "#9966cb", // Amethyst
+        "secondary":"#c26dbc" // Fuchsia Pink
+      }
+    },
   },
   plugins: [],
 }
