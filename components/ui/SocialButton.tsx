@@ -39,7 +39,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({
         color={iconColor} 
         style={styles.icon} 
       />
-      <Text style={[styles.text, { color: theme.text }]}>
+      <Text style={[styles.text, { color: theme.text, fontFamily: theme.fonts.regular }]}>
         {label}
       </Text>
     </TouchableOpacity>

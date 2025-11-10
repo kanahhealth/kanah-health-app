@@ -1,11 +1,10 @@
-import { CustomButton, CustomInput, LoadingOverlay, SocialButton } from '@/components/ui';
+import { CustomAlert, CustomButton, CustomInput, LoadingOverlay, SocialButton } from '@/components/ui';
 import { darkTheme, lightTheme } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { ArrowLeft, ArrowRight, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   Keyboard,
   Platform,
   ScrollView,
@@ -25,6 +24,20 @@ export default function SignupScreen() {
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  
+  // Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    type: 'error' | 'success' | 'info' | 'warning';
+    title: string;
+    message: string;
+  }>({
+    visible: false,
+    type: 'error',
+    title: '',
+    message: '',
+  });
+
   const { signup } = useAuth();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
@@ -46,19 +59,23 @@ export default function SignupScreen() {
     };
   }, []);
 
+  const showAlert = (type: 'error' | 'success' | 'info' | 'warning', title: string, message: string) => {
+    setAlertConfig({ visible: true, type, title, message });
+  };
+
   const handleSignup = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showAlert('error', 'Oops, Something\'s Wrong!', 'Please fill in all fields to continue');
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      showAlert('error', 'Passwords Don\'t Match!', 'Please make sure your passwords match');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      showAlert('error', 'Password Too Short!', 'Password must be at least 6 characters long');
       return;
     }
 
@@ -66,13 +83,13 @@ export default function SignupScreen() {
       setIsLoading(true);
       await signup(email, password);
     } catch (error: any) {
-      Alert.alert('Signup Failed', error.message || 'Please try again');
       setIsLoading(false);
+      showAlert('error', 'Signup Failed!', error.message || 'Please try again later');
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    Alert.alert('Social Login', `${provider} login coming soon!`);
+    showAlert('info', 'Coming Soon!', `${provider} login will be available soon!`);
   };
 
   return (
@@ -99,10 +116,10 @@ export default function SignupScreen() {
 
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={[styles.welcomeTitle, { color: theme.text }]}>
+          <Text style={[styles.welcomeTitle, { color: theme.text, fontFamily: theme.fonts.heading }]}>
             Create an Account 👋
           </Text>
-          <Text style={[styles.welcomeSubtitle, { color: theme.textSecondary }]}>
+          <Text style={[styles.welcomeSubtitle, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>
             Enter your details below to create an account
           </Text>
         </View>
@@ -166,7 +183,7 @@ export default function SignupScreen() {
         {/* Separator */}
         <View style={styles.separator}>
           <View style={[styles.separatorLine, { backgroundColor: theme.border }]} />
-          <Text style={[styles.separatorText, { color: theme.textSecondary }]}>or</Text>
+          <Text style={[styles.separatorText, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>or</Text>
           <View style={[styles.separatorLine, { backgroundColor: theme.border }]} />
         </View>
 
@@ -186,14 +203,14 @@ export default function SignupScreen() {
 
         {/* Sign Up Link */}
         <View style={styles.signUpLinkContainer}>
-          <Text style={[styles.signUpLinkText, { color: theme.textSecondary }]}>
+          <Text style={[styles.signUpLinkText, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>
             Already have an account?{' '}
           </Text>
           <TouchableOpacity 
             onPress={() => router.push('/(auth)/login')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.signUpLink, { color: theme.primary }]}>
+            <Text style={[styles.signUpLink, { color: theme.primary, fontFamily: theme.fonts.semiBold }]}>
               Log in
             </Text>
           </TouchableOpacity>
@@ -202,6 +219,16 @@ export default function SignupScreen() {
         {/* Extra padding at bottom for keyboard */}
         {isKeyboardVisible && <View style={{ height: 20 }} />}
       </ScrollView>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+        theme={theme}
+      />
 
       {/* Loading Overlay */}
       <LoadingOverlay
@@ -232,7 +259,6 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
     marginBottom: 6,
   },
   welcomeSubtitle: {
@@ -268,6 +294,5 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     fontSize: 14,
-    fontWeight: '600',
   },
 });

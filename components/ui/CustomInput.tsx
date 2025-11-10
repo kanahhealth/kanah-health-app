@@ -23,7 +23,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
+      <Text style={[styles.label, { color: theme.text, fontFamily: theme.fonts.medium }]}>{label}</Text>
       <View style={[
         styles.inputWrapper,
         { 
@@ -37,7 +37,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
           </View>
         )}
         <TextInput
-          style={[styles.input, { color: theme.text }]}
+          style={[styles.input, { color: theme.text, fontFamily: theme.fonts.regular }]}
           placeholderTextColor={theme.textTertiary}
           secureTextEntry={isPassword && !isPasswordVisible}
           {...textInputProps}
@@ -66,7 +66,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
     marginBottom: 8,
   },
   inputWrapper: {

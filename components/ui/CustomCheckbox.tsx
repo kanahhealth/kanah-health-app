@@ -32,7 +32,7 @@ export const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
       ]}>
         {checked && <Check size={16} color="#FFFFFF" />}
       </View>
-      <Text style={[styles.label, { color: theme.text }]}>
+      <Text style={[styles.label, { color: theme.text, fontFamily: theme.fonts.regular }]}>
         {label}
       </Text>
     </TouchableOpacity>

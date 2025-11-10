@@ -1,6 +1,6 @@
+import { darkTheme, lightTheme } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
-import { darkTheme, lightTheme } from '@/constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AppointmentsScreen() {
@@ -16,10 +16,10 @@ export default function AppointmentsScreen() {
         paddingTop: insets.top + 20,
       }
     ]}>
-      <Text style={[styles.title, { color: theme.text }]}>
+      <Text style={[styles.title, { color: theme.text, fontFamily: theme.fonts.heading }]}>
         Appointments
       </Text>
-      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+      <Text style={[styles.subtitle, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>
         Your upcoming appointments will appear here
       </Text>
     </View>
@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     marginBottom: 8,
   },
   subtitle: {

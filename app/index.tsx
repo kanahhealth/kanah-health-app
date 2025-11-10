@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   brandText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Montserrat_600SemiBold',
     marginTop: 8,
   },
   logo: {
@@ -120,12 +120,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Montserrat_700Bold',
     marginBottom: 16,
     lineHeight: 36,
   },
   description: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
     lineHeight: 20,
     marginBottom: 32,
   },
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   signUpButton: {
     flexDirection: 'row',
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   bottomSection: {
     flex: 1,

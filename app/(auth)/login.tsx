@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { ArrowLeft, ArrowRight, Lock, Mail } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   Keyboard,
   Platform,
   ScrollView,
@@ -15,7 +14,7 @@ import {
   View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomInput, CustomButton, SocialButton, CustomCheckbox, LoadingOverlay } from '@/components/ui';
+import { CustomInput, CustomButton, SocialButton, CustomCheckbox, LoadingOverlay, CustomAlert } from '@/components/ui';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -24,6 +23,20 @@ export default function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  
+  // Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    type: 'error' | 'success' | 'info' | 'warning';
+    title: string;
+    message: string;
+  }>({
+    visible: false,
+    type: 'error',
+    title: '',
+    message: '',
+  });
+
   const { login } = useAuth();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
@@ -45,9 +58,13 @@ export default function LoginScreen() {
     };
   }, []);
 
+  const showAlert = (type: 'error' | 'success' | 'info' | 'warning', title: string, message: string) => {
+    setAlertConfig({ visible: true, type, title, message });
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showAlert('error', 'Oops, Something\'s Wrong!', 'Please fill in all fields to continue');
       return;
     }
 
@@ -55,13 +72,13 @@ export default function LoginScreen() {
       setIsLoading(true);
       await login(email, password);
     } catch (error) {
-      Alert.alert('Login Failed', 'Please check your credentials and try again');
       setIsLoading(false);
+      showAlert('error', 'Oops, Something\'s Wrong!', 'Please check your credentials and try again');
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    Alert.alert('Social Login', `${provider} login coming soon!`);
+    showAlert('info', 'Coming Soon!', `${provider} login will be available soon!`);
   };
 
   return (
@@ -88,10 +105,10 @@ export default function LoginScreen() {
 
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={[styles.welcomeTitle, { color: theme.text }]}>
+          <Text style={[styles.welcomeTitle, { color: theme.text, fontFamily: theme.fonts.heading }]}>
             Welcome Back! 👋
           </Text>
-          <Text style={[styles.welcomeSubtitle, { color: theme.textSecondary }]}>
+          <Text style={[styles.welcomeSubtitle, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>
             Sign in for Exclusive Rewards
           </Text>
         </View>
@@ -134,8 +151,11 @@ export default function LoginScreen() {
             onPress={() => setRememberMe(!rememberMe)}
             theme={theme}
           />
-          <TouchableOpacity activeOpacity={0.7}>
-            <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>
+          <TouchableOpacity 
+            activeOpacity={0.7}
+            onPress={() => router.push('/(auth)/forgot-password')}
+          >
+            <Text style={[styles.forgotPasswordText, { color: theme.primary, fontFamily: theme.fonts.medium }]}>
               Forgot Password?
             </Text>
           </TouchableOpacity>
@@ -155,7 +175,7 @@ export default function LoginScreen() {
         {/* Separator */}
         <View style={styles.separator}>
           <View style={[styles.separatorLine, { backgroundColor: theme.border }]} />
-          <Text style={[styles.separatorText, { color: theme.textSecondary }]}>or</Text>
+          <Text style={[styles.separatorText, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>or</Text>
           <View style={[styles.separatorLine, { backgroundColor: theme.border }]} />
         </View>
 
@@ -175,14 +195,14 @@ export default function LoginScreen() {
 
         {/* Sign In Link */}
         <View style={styles.signInLinkContainer}>
-          <Text style={[styles.signInLinkText, { color: theme.textSecondary }]}>
+          <Text style={[styles.signInLinkText, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>
             Don't have an account?{' '}
           </Text>
           <TouchableOpacity 
             onPress={() => router.push('/(auth)/signup')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.signInLink, { color: theme.primary }]}>
+            <Text style={[styles.signInLink, { color: theme.primary, fontFamily: theme.fonts.semiBold }]}>
               Get Started
             </Text>
           </TouchableOpacity>
@@ -191,6 +211,16 @@ export default function LoginScreen() {
         {/* Extra padding at bottom for keyboard */}
         {isKeyboardVisible && <View style={{ height: 20 }} />}
       </ScrollView>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+        theme={theme}
+      />
 
       {/* Loading Overlay */}
       <LoadingOverlay
@@ -221,7 +251,6 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
     marginBottom: 8,
   },
   welcomeSubtitle: {
@@ -235,7 +264,6 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    fontWeight: '500',
   },
   signInButton: {
     marginBottom: 24,
@@ -267,6 +295,5 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     fontSize: 14,
-    fontWeight: '600',
   },
 });

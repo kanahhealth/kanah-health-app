@@ -16,7 +16,7 @@ export default function HomeScreen() {
         paddingTop: insets.top,
       }
     ]}>
-      <Text style={[styles.title, { color: theme.text }]}>
+      <Text style={[styles.title, { color: theme.text, fontFamily: theme.fonts.heading }]}>
         Welcome to Kanah
       </Text>
     </View>
@@ -32,6 +32,5 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 48,
-    fontWeight: 'bold',
   },
 });

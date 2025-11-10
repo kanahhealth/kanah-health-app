@@ -2,6 +2,16 @@
 export const PRIMARY_COLOR = '#c26dbc'; // Fuchsia Pink - primary brand color
 export const CREAM_BACKGROUND = '#F5F0E8'; // Cream background color
 
+// Font families
+export const FONTS = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semiBold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  heading: 'Montserrat_700Bold',
+  headingMedium: 'Montserrat_600SemiBold',
+};
+
 export const lightTheme = {
   background: CREAM_BACKGROUND, // Cream background for all light mode screens
   surface: '#FFFFFF',
@@ -15,6 +25,7 @@ export const lightTheme = {
   checkbox: PRIMARY_COLOR,
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayBackground: CREAM_BACKGROUND,
+  fonts: FONTS,
 };
 
 export const darkTheme = {
@@ -30,6 +41,7 @@ export const darkTheme = {
   checkbox: PRIMARY_COLOR,
   overlay: 'rgba(0, 0, 0, 0.7)',
   overlayBackground: '#1A1730',
+  fonts: FONTS,
 };
 
 export type Theme = typeof lightTheme;

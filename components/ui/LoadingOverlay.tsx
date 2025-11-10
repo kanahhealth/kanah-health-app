@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Theme } from '@/constants/theme';
 
 interface LoadingOverlayProps {
@@ -16,17 +17,17 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   if (!visible) return null;
 
   return (
-    <View style={[styles.overlay, { backgroundColor: theme.overlay }]}>
+    <BlurView intensity={20} style={[styles.overlay, { backgroundColor: theme.overlay }]}>
       <View style={[
         styles.modal,
         { backgroundColor: theme.overlayBackground }
       ]}>
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.text, { color: theme.text }]}>
+        <Text style={[styles.text, { color: theme.text, fontFamily: theme.fonts.medium }]}>
           {text}
         </Text>
       </View>
-    </View>
+    </BlurView>
   );
 };
 

@@ -16,10 +16,10 @@ export default function CalendarScreen() {
         paddingTop: insets.top + 20,
       }
     ]}>
-      <Text style={[styles.title, { color: theme.text }]}>
+      <Text style={[styles.title, { color: theme.text, fontFamily: theme.fonts.heading }]}>
         Calendar
       </Text>
-      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+      <Text style={[styles.subtitle, { color: theme.textSecondary, fontFamily: theme.fonts.regular }]}>
         Your calendar events will appear here
       </Text>
     </View>
@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     marginBottom: 8,
   },
   subtitle: {

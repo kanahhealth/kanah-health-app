@@ -52,7 +52,8 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
         <>
           <Text style={[
             styles.buttonText,
-            isPrimary ? styles.primaryButtonText : { color: theme.text }
+            isPrimary ? styles.primaryButtonText : { color: theme.text },
+            { fontFamily: theme.fonts.semiBold }
           ]}>
             {title}
           </Text>
@@ -87,7 +88,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
   },
   primaryButtonText: {
     color: '#FFFFFF',
