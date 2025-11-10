@@ -1,12 +1,42 @@
-import React from 'react'
-import { Text, View } from 'react-native'
+import React from 'react';
+import { StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { darkTheme, lightTheme } from '@/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const appointments = () => {
+export default function AppointmentsScreen() {
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const insets = useSafeAreaInsets();
+
   return (
-    <View>
-      <Text>appointments</Text>
+    <View style={[
+      styles.container, 
+      { 
+        backgroundColor: theme.background,
+        paddingTop: insets.top + 20,
+      }
+    ]}>
+      <Text style={[styles.title, { color: theme.text }]}>
+        Appointments
+      </Text>
+      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+        Your upcoming appointments will appear here
+      </Text>
     </View>
-  )
+  );
 }
 
-export default appointments
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+  },
+});

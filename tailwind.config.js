@@ -10,7 +10,9 @@ module.exports = {
     extend: {
       colors: {
         "primary": "#9966cb", // Amethyst
-        "secondary":"#c26dbc" // Fuchsia Pink
+        "secondary": "#c26dbc", // Fuchsia Pink
+        "cream": "#F5F0E8", // Cream background
+        "cream-bg": "#F5F0E8", // Cream background alias
       }
     },
   },
