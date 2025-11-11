@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomInput, CustomButton, LoadingOverlay, CustomAlert } from '@/components/ui';
+import { resetPassword } from '@/lib/auth';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -53,22 +54,23 @@ export default function ForgotPasswordScreen() {
 
     try {
       setIsLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await resetPassword(email);
       
       setIsLoading(false);
       
-      // Mock success
-      showAlert('success', 'OTP Sent Successfully!', 'OTP code has been sent to your email. Please check your inbox.');
-      
-      // Navigate back after 2 seconds
-      setTimeout(() => {
-        router.back();
-      }, 2000);
-    } catch (error) {
+      if (result.success) {
+        showAlert('success', 'Reset Email Sent! 📧', 'Check your inbox for password reset instructions.');
+        
+        // Navigate back after 2 seconds
+        setTimeout(() => {
+          router.replace('/(auth)/login');
+        }, 2000);
+      } else {
+        showAlert('error', 'Reset Failed', result.error || 'Please try again later');
+      }
+    } catch (error: any) {
       setIsLoading(false);
-      showAlert('error', 'Oops, Something\'s Wrong!', 'Failed to send OTP. Please try again later');
+      showAlert('error', 'Oops, Something\'s Wrong!', error.message || 'Failed to send reset email');
     }
   };
 

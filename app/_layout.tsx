@@ -1,5 +1,6 @@
 import { CREAM_BACKGROUND } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
 import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -100,7 +101,9 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <OnboardingProvider>
+        <RootLayoutNav />
+      </OnboardingProvider>
     </AuthProvider>
   );
 }

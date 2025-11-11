@@ -1,3 +1,4 @@
+import { CustomAlert, CustomButton, CustomCheckbox, CustomInput, LoadingOverlay, SocialButton } from '@/components/ui';
 import { darkTheme, lightTheme } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
@@ -14,7 +15,6 @@ import {
   View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomInput, CustomButton, SocialButton, CustomCheckbox, LoadingOverlay, CustomAlert } from '@/components/ui';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -37,7 +37,7 @@ export default function LoginScreen() {
     message: '',
   });
 
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   const insets = useSafeAreaInsets();
@@ -71,14 +71,34 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       await login(email, password);
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false);
-      showAlert('error', 'Oops, Something\'s Wrong!', 'Please check your credentials and try again');
+      
+      // Check if email not verified
+      if (error.message?.includes('Email not confirmed')) {
+        showAlert(
+          'warning',
+          'Email Not Verified',
+          'Please check your email and click the verification link before signing in.'
+        );
+      } else {
+        showAlert('error', 'Oops, Something\'s Wrong!', error.message || 'Please check your credentials and try again');
+      }
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    showAlert('info', 'Coming Soon!', `${provider} login will be available soon!`);
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await loginWithGoogle();
+    } catch (error: any) {
+      setIsLoading(false);
+      showAlert(
+        'error',
+        'Google Sign In Failed',
+        error.message || 'Failed to sign in with Google'
+      );
+    }
   };
 
   return (
@@ -184,12 +204,7 @@ export default function LoginScreen() {
           <SocialButton
             provider="google"
             theme={theme}
-            onPress={() => handleSocialLogin('Google')}
-          />
-          <SocialButton
-            provider="apple"
-            theme={theme}
-            onPress={() => handleSocialLogin('Apple')}
+            onPress={handleGoogleLogin}
           />
         </View>
 
@@ -207,6 +222,19 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Developer Mode - Test Database Connection */}
+        {__DEV__ && (
+          <TouchableOpacity 
+            onPress={() => router.push('/(auth)/test-connection')}
+            activeOpacity={0.7}
+            style={styles.devModeButton}
+          >
+            <Text style={[styles.devModeText, { color: theme.textTertiary, fontFamily: theme.fonts.regular }]}>
+              🔧 Test Database Connection
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Extra padding at bottom for keyboard */}
         {isKeyboardVisible && <View style={{ height: 20 }} />}
@@ -295,5 +323,13 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     fontSize: 14,
+  },
+  devModeButton: {
+    alignItems: 'center',
+    marginTop: 16,
+    padding: 8,
+  },
+  devModeText: {
+    fontSize: 12,
   },
 });

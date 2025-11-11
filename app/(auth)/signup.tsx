@@ -38,7 +38,7 @@ export default function SignupScreen() {
     message: '',
   });
 
-  const { signup } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   const insets = useSafeAreaInsets();
@@ -84,12 +84,32 @@ export default function SignupScreen() {
       await signup(email, password);
     } catch (error: any) {
       setIsLoading(false);
-      showAlert('error', 'Signup Failed!', error.message || 'Please try again later');
+      
+      if (error.message?.startsWith('VERIFICATION_REQUIRED:')) {
+        const userEmail = error.message.split(':')[1];
+        // Navigate to verification screen
+        router.push({
+          pathname: '/(auth)/verify-email',
+          params: { email: userEmail },
+        });
+      } else {
+        showAlert('error', 'Signup Failed!', error.message || 'Please try again later');
+      }
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    showAlert('info', 'Coming Soon!', `${provider} login will be available soon!`);
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await loginWithGoogle();
+    } catch (error: any) {
+      setIsLoading(false);
+      showAlert(
+        'error',
+        'Google Sign Up Failed',
+        error.message || 'Failed to sign up with Google'
+      );
+    }
   };
 
   return (
@@ -192,12 +212,7 @@ export default function SignupScreen() {
           <SocialButton
             provider="google"
             theme={theme}
-            onPress={() => handleSocialLogin('Google')}
-          />
-          <SocialButton
-            provider="apple"
-            theme={theme}
-            onPress={() => handleSocialLogin('Apple')}
+            onPress={handleGoogleLogin}
           />
         </View>
 

@@ -1,62 +1,105 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { onAuthStateChange, signInWithEmail, signOut, signUpWithEmail } from '@/lib/auth';
+import { checkOnboardingStatus } from '@/lib/database';
+import { signInWithGoogle as oauthGoogle } from '@/lib/oauth';
+import { getCurrentUser, supabase } from '@/lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { router } from 'expo-router';
-import mockUsers from '@/data/mockUsers.json';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface User {
   id: string;
   email: string;
   name?: string;
-}
-
-interface MockUser {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  createdAt: string;
+  phone?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  supabaseUser: SupabaseUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_TOKEN_KEY = 'auth_token';
-const USER_DATA_KEY = 'user_data';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already authenticated on app start
+  // Check auth on mount and listen to auth changes
   useEffect(() => {
     checkAuth();
+
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      
+      if (session?.user) {
+        setSupabaseUser(session.user);
+        await loadUserProfile(session.user.id);
+      } else {
+        setUser(null);
+        setSupabaseUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        // Only log if it's not a "no rows" error (user might not have profile yet)
+        if (error.code !== 'PGRST116') {
+          console.error('Error loading user profile:', error);
+        }
+        return;
+      }
+
+      if (data) {
+        setUser({
+          id: data.id,
+          email: data.email,
+          name: data.full_name,
+          phone: data.phone_number,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   const checkAuth = async () => {
     try {
       setIsLoading(true);
-      const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-      const userData = await SecureStore.getItemAsync(USER_DATA_KEY);
+      const currentUser = await getCurrentUser();
 
-      if (token && userData) {
-        // Verify token is still valid (you can add API call here)
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+      if (currentUser) {
+        setSupabaseUser(currentUser);
+        await loadUserProfile(currentUser.id);
       } else {
+        // No user logged in - this is normal
         setUser(null);
+        setSupabaseUser(null);
       }
     } catch (error) {
+      // Error checking auth (not just "no user")
       console.error('Error checking auth:', error);
       setUser(null);
+      setSupabaseUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -64,34 +107,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Check against mock users
-      const users = mockUsers as MockUser[];
-      const foundUser = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-      );
+      const result = await signInWithEmail(email, password);
 
-      if (!foundUser) {
-        throw new Error('Invalid credentials');
+      if (!result.success || !result.user) {
+        throw new Error(result.error || 'Login failed');
       }
 
-      const user: User = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-      };
-      const mockToken = 'mock_token_' + Date.now();
+      setSupabaseUser(result.user);
+      await loadUserProfile(result.user.id);
 
-      // Store auth data
-      await SecureStore.setItemAsync(AUTH_TOKEN_KEY, mockToken);
-      await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(user));
+      // Check onboarding status
+      const onboardingStatus = await checkOnboardingStatus(result.user.id);
 
-      setUser(user);
-      
-      // Navigate to main app
-      router.replace('/(tabs)');
+      if (onboardingStatus.isComplete) {
+        // User completed onboarding, go to dashboard
+        const userName = onboardingStatus.data?.user?.full_name || 'there';
+        console.log(`Welcome back, ${userName}!`);
+        router.replace('/(tabs)');
+      } else {
+        // User needs to complete onboarding
+        console.log('Onboarding incomplete, starting onboarding flow...');
+        router.replace('/(onboarding)/phone-verification');
+      }
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -100,46 +137,96 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (email: string, password: string, name?: string) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Check if user already exists
-      const users = mockUsers as MockUser[];
-      const existingUser = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase()
-      );
+      const result = await signUpWithEmail(email, password, {
+        full_name: name,
+      });
 
-      if (existingUser) {
-        throw new Error('User already exists');
+      if (!result.success) {
+        throw new Error(result.error || 'Signup failed');
       }
 
-      // Create new user
-      const newUser: User = {
-        id: String(Date.now()), // Simple ID generation
-        email,
-        name: name || email.split('@')[0],
-      };
-      const mockToken = 'mock_token_' + Date.now();
+      if (result.requiresEmailVerification) {
+        // Email verification required - user needs to verify then sign in
+        console.log('📧 Email verification required for:', email);
+        throw new Error(`VERIFICATION_REQUIRED:${email}`);
+      }
 
-      // Store auth data
-      await SecureStore.setItemAsync(AUTH_TOKEN_KEY, mockToken);
-      await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(newUser));
+      if (result.user) {
+        setSupabaseUser(result.user);
+        
+        // Create user profile in database
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: result.user.id,
+            email: result.user.email!,
+            full_name: name || result.user.email!.split('@')[0],
+            user_type: 'mother',
+            email_verified: true,
+          });
 
-      setUser(newUser);
-      
-      // Navigate to main app
-      router.replace('/(tabs)');
-    } catch (error) {
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+        }
+
+        await loadUserProfile(result.user.id);
+
+        // New user - go to onboarding
+        console.log('New user signup, starting onboarding...');
+        router.replace('/(onboarding)/phone-verification');
+      }
+    } catch (error: any) {
       console.error('Signup error:', error);
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      const result = await oauthGoogle();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Google sign in failed');
+      }
+
+      if (result.session?.user) {
+        setSupabaseUser(result.session.user);
+        
+        // Check if user profile exists
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', result.session.user.id)
+          .single();
+
+        if (!existingUser) {
+          // Create user profile for new OAuth user
+          await supabase.from('users').insert({
+            id: result.session.user.id,
+            email: result.session.user.email!,
+            full_name: result.session.user.user_metadata?.full_name || result.session.user.email!.split('@')[0],
+            user_type: 'mother',
+            email_verified: true,
+          });
+        }
+
+        await loadUserProfile(result.session.user.id);
+
+        // Check onboarding
+        const onboardingStatus = await checkOnboardingStatus(result.session.user.id);
+        router.replace(onboardingStatus.isComplete ? '/(tabs)' : '/(onboarding)/phone-verification');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-      await SecureStore.deleteItemAsync(USER_DATA_KEY);
+      await signOut();
       setUser(null);
+      setSupabaseUser(null);
       router.replace('/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -151,10 +238,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        supabaseUser,
         isLoading,
         isAuthenticated: !!user,
         login,
         signup,
+        loginWithGoogle,
         logout,
         checkAuth,
       }}
